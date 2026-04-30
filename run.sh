@@ -46,6 +46,6 @@ echo "Python version: $("$ENV_PY" --version 2>&1)" >> "$LOG_FILE"
 echo "Current directory: $(pwd)" >> "$LOG_FILE"
 
 # ---- 実行 ----
-"$ENV_PY" reserve.py --time "16:50" "17:50" --menu "技能教習" >> "$LOG_FILE" 2>&1
+"$ENV_PY" reserve.py --env .env --config config_osatoosi.json >> "$LOG_FILE" 2>&1
 
 echo "=== Cron Job Finished at $(date) ===" >> "$LOG_FILE"

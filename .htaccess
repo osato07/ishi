@@ -1,0 +1,30 @@
+# 機密ファイルへの直接HTTPアクセスを禁止
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "^config_.*\.json$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.log$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.sh$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.py$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

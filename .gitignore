@@ -4,6 +4,13 @@
 !.env.example
 !.env.*.example
 
+# 管理画面パスワードハッシュ（初回セットアップで生成される）
+admin/config.php
+
+# ユーザー設定JSON（ローカル管理）
+config_*.json
+!config_*.json.example
+
 # ログ
 *.log
 
