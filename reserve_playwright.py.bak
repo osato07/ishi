@@ -1,0 +1,263 @@
+#!/usr/bin/env python3
+"""
+ishii-ds.resv.jp 予約自動化スクリプト
+Python + Playwright + cron で動作する予約自動化スクリプト。
+
+使用方法:
+    python3 reserve.py --date "2026/04/25" --time "9:00" "10:00" --menu "高速教習"
+
+オプション:
+    --date      日付 (例: "2026/04/25")
+    --time      時刻 (複数指定可、例: "9:00" "10:00")
+    --menu      メニュー名 (例: "高速教習")
+    --debug     ヘッドフルモードで起動（ブラウザ画面あり）
+    --dry-run   最終確定ボタンを押さずに終了する
+
+終了コード:
+    0  指定した時刻のうち、1つ以上予約に成功した（または dry-run 成功）
+    1  致命的なエラー（ログイン失敗など）
+    2  対象の予約枠がいずれも見つからなかった、またはすべて満席だった
+"""
+
+import argparse
+import logging
+import os
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+
+from dotenv import load_dotenv
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import sync_playwright
+
+# ─────────────────────────────────────────────
+# 定数
+# ─────────────────────────────────────────────
+CALENDAR_URL = "https://ishii-ds.resv.jp/reserve/calendar.php"
+LOGIN_URL = "https://ishii-ds.resv.jp/user/res_user.php"
+SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
+DEFAULT_TIMEOUT = 15000  # ms
+
+# ─────────────────────────────────────────────
+# ログ設定
+# ─────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
+
+# ─────────────────────────────────────────────
+# 引数パース
+# ─────────────────────────────────────────────
+def parse_args():
+    parser = argparse.ArgumentParser(description="ishii-ds 予約自動化スクリプト")
+    parser.add_argument("--date", help='日付 (省略時は自動で今日から2日後に設定されます) 例: "2026/04/25"')
+    parser.add_argument("--time", required=True, nargs='+', help='時刻 (複数指定可) 例: "9:00" "10:00"')
+    parser.add_argument("--menu", required=True, help='メニュー名 例: "高速教習"')
+    parser.add_argument("--debug", action="store_true", help="ヘッドフルモード（ブラウザ表示）")
+    parser.add_argument("--dry-run", action="store_true", help="完了ボタンを押さずに終了")
+    return parser.parse_args()
+
+
+# ─────────────────────────────────────────────
+# .env 読み込み
+# ─────────────────────────────────────────────
+def load_credentials():
+    env_path = Path(__file__).parent / ".env"
+    load_dotenv(dotenv_path=env_path)
+    login_id = os.getenv("id") or os.getenv("LOGIN_ID")
+    login_pw = os.getenv("password") or os.getenv("LOGIN_PASS")
+    if not login_id or not login_pw:
+        logger.error(".env に id と password が設定されていません")
+        sys.exit(1)
+    return login_id, login_pw
+
+
+# ─────────────────────────────────────────────
+# スクリーンショット・ユーティリティ
+# ─────────────────────────────────────────────
+def save_screenshot(page, label: str):
+    SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = SCREENSHOT_DIR / f"{ts}_{label}.png"
+    try:
+        page.screenshot(path=str(path))
+        logger.info(f"スクリーンショット保存: {path}")
+    except Exception as e:
+        logger.warning(f"スクリーンショット保存失敗: {e}")
+
+
+# ─────────────────────────────────────────────
+# ページ単位の処理
+# ─────────────────────────────────────────────
+def is_login_page(page) -> bool:
+    has_loginid = page.locator('input[name="loginid"]').count() > 0
+    has_loginpw = page.locator('input[name="loginpw"]').count() > 0
+    return has_loginid and has_loginpw
+
+
+def do_login(page, login_id: str, login_pw: str):
+    logger.info("ログイン処理を実行します")
+    page.locator('input[name="loginid"]').fill(login_id)
+    page.locator('input[name="loginpw"]').fill(login_pw)
+    page.locator('input[name="submit"]').click()
+    page.wait_for_url("**/reserve/calendar.php**", timeout=DEFAULT_TIMEOUT)
+    logger.info("ログイン成功")
+
+
+def find_reservation_row(page, target_date: str, target_time: str, target_menu: str):
+    rows = page.locator("table.calendar-type-4 tbody tr:not(.list_th)")
+    row_count = rows.count()
+
+    for i in range(row_count):
+        row = rows.nth(i)
+        tds = row.locator("td")
+        if tds.count() < 6:
+            continue
+
+        col_date = tds.nth(1).inner_text().strip()
+        col_time = tds.nth(2).inner_text().strip()
+        col_menu = tds.nth(4).inner_text().strip()
+
+        if col_date.startswith(target_date) and col_time.startswith(target_time) and target_menu in col_menu:
+            btn = row.locator("a.main-btn")
+            if btn.count() > 0:
+                return btn.first
+            else:
+                return None
+    return None
+
+
+# ─────────────────────────────────────────────
+# メイン処理
+# ─────────────────────────────────────────────
+def main():
+    args = parse_args()
+    login_id, login_pw = load_credentials()
+
+    # 日付の自動計算 (指定が無ければ2日後に設定)
+    if args.date:
+        target_date = args.date
+    else:
+        from datetime import timedelta
+        target_date = (datetime.now() + timedelta(days=2)).strftime("%Y/%m/%d")
+
+    logger.info("=" * 60)
+    logger.info(f"予約開始: date={target_date}, times={args.time}, menu={args.menu}")
+    if args.dry_run:
+        logger.info("【DRY-RUN モード】最終予約確定は行いません")
+
+    success_count = 0
+
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(
+            headless=not args.debug,
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
+        )
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/124.0.0.0 Safari/537.36"
+        )
+        page = context.new_page()
+        page.set_default_timeout(DEFAULT_TIMEOUT)
+
+        try:
+            # ── 1. 初回アクセスとログイン ──────────────────────────────
+            page.goto(CALENDAR_URL, wait_until="domcontentloaded")
+            if is_login_page(page):
+                do_login(page, login_id, login_pw)
+                page.goto(CALENDAR_URL, wait_until="domcontentloaded")
+
+            # ── 2. 各時間帯ごとに予約を試行 ──────────────────────────────
+            for target_time in args.time:
+                logger.info("-" * 40)
+                logger.info(f"【判定開始】 時刻: {target_time}")
+
+                # まずカレンダーページを表示
+                if not ("calendar.php" in page.url):
+                    page.goto(CALENDAR_URL, wait_until="domcontentloaded")
+
+                try:
+                    page.wait_for_selector("table.calendar-type-4", timeout=DEFAULT_TIMEOUT)
+                except PlaywrightTimeoutError:
+                    logger.warning("カレンダーテーブルが見つかりませんでした。")
+                    save_screenshot(page, "error_no_table")
+                    continue
+
+                # 表の中から枠を探す
+                reservation_btn = find_reservation_row(page, target_date, target_time, args.menu)
+                if reservation_btn is None:
+                    logger.warning(f"[{target_time}] の予約枠が見つからない、または満席アイコンです")
+                    continue
+
+                logger.info(f"[{target_time}] 予約ボタン(△/○)を発見。クリックして詳細へ進みます")
+                with page.expect_navigation(wait_until="domcontentloaded"):
+                    reservation_btn.click()
+
+                # res_timetbl_detail で本当に予約送信ボタンがあるか確認
+                submit_btn = page.locator('form[name="reserveform"] input[type="submit"], form[name="reserveform"] button[type="submit"]')
+                if submit_btn.count() == 0:
+                    logger.warning(f"[{target_time}] 詳細ページに入りましたが、定員エラーなどで予約不可でした")
+                    # 次の時間を探すためにカレンダーに戻る
+                    continue
+
+                logger.info(f"[{target_time}] 予約可能を確認。確認ページへ進みます")
+                with page.expect_navigation(wait_until="domcontentloaded"):
+                    submit_btn.first.click()
+
+                # res_confirm で完了ボタン
+                confirm_btn = page.locator('#res_confrim_submit')
+                if confirm_btn.count() == 0:
+                    logger.error(f"[{target_time}] 確認ページの完了ボタンが見つかりません!!")
+                    save_screenshot(page, f"error_no_confirm_btn_{target_time.replace(':','')}")
+                    continue
+
+                if args.dry_run:
+                    logger.info(f"[DRY-RUN] [{target_time}] 完了ボタンを押さずにスキップします (成功扱い)")
+                    success_count += 1
+                    # 次の処理へ行く前に少し待ってからカレンダーへ戻る
+                    time.sleep(1)
+                    page.goto(CALENDAR_URL, wait_until="domcontentloaded")
+                    continue
+
+                # 本番実行
+                logger.info(f"[{target_time}] 「完了する」をクリックして予約を確定します！")
+                with page.expect_navigation(wait_until="domcontentloaded"):
+                    confirm_btn.click()
+
+                # 成功判定
+                page_text = page.inner_text("body")
+                if "res_last.php" in page.url or any(kw in page_text for kw in ["予約が完了", "受付しました", "予約完了", "完了しました"]):
+                    logger.info(f"✅ [{target_time}] の予約が完了しました！")
+                    success_count += 1
+                else:
+                    logger.error(f"[{target_time}] 予約完了を確認できませんでした...")
+                    save_screenshot(page, f"error_unknown_final_{target_time.replace(':','')}")
+
+                # 次の時間を確認するためにカレンダーへ戻る
+                time.sleep(2)  # サーバー負荷軽減のため少し待機
+                page.goto(CALENDAR_URL, wait_until="domcontentloaded")
+
+            # ── 3. 全てのループ終了 ──────────────────────────────
+            logger.info("=" * 60)
+            if success_count > 0:
+                logger.info(f"処理完了: {success_count}件 の予約に成功しました。")
+                sys.exit(0)
+            else:
+                logger.info("処理完了: 有効な予約枠は空いていませんでした。")
+                sys.exit(2)
+
+        except Exception as e:
+            logger.error(f"予期しないエラー: {e}", exc_info=True)
+            save_screenshot(page, "error_unexpected")
+            sys.exit(1)
+        finally:
+            context.close()
+            browser.close()
+
+
+if __name__ == "__main__":
+    main()

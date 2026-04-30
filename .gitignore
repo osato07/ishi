@@ -1,0 +1,22 @@
+# 認証情報（絶対にコミットしない）
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ログ
+*.log
+
+# Pythonキャッシュ
+__pycache__/
+*.py[cod]
+*.pyo
+
+# dumps（デバッグ用HTMLダンプ）
+dumps/
+
+# スクリーンショット
+screenshots/
+
+# macOS
+.DS_Store

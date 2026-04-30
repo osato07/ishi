@@ -1,0 +1,273 @@
+/* このファイルは UTF-8 で保存すること */
+/*
+ * グリーンアップル
+ */
+
+/***************************************
+ * main
+ **************************************/
+
+.main-btn {
+  background: #94d315;
+  border: 1px solid #8cc715;
+  -webkit-transition: background-color .4s ease;
+  -moz-transition: background-color .4s ease;
+  -o-transition: background-color .4s ease;
+  transition: background-color .4s ease;
+}
+
+.main-btn:hover {
+  background: #8cc715;
+}
+
+.btn-type2 {
+  background: #94d315;
+  border: 1px solid #8cc715;
+  -webkit-transition: background-color .4s ease;
+  -moz-transition: background-color .4s ease;
+  -o-transition: background-color .4s ease;
+  transition: background-color .4s ease;
+}
+
+.btn-type2:hover {
+  background: #8cc715;
+}
+
+/***************************************
+ * text
+ **************************************/
+
+h2 {
+  background-color: #f2ffd6;
+  border-bottom: 2px solid #94d315;
+  font-size: 138.5%;
+  font-weight: bold;
+  height: 40px;
+  letter-spacing: 1px;
+  line-height: 40px;
+  padding-left: 15px;
+}
+
+h3 {
+  border-bottom: 2px solid #94d315;
+}
+
+h5.side-bd {
+  border-left: 3px solid #94d315;
+  margin-bottom: 5px;
+}
+
+.ui-widget-header {
+  background-color: #94d315;
+  color: #ffffff;
+  font-size: 138.5%;
+  font-weight: bold;
+  height: 38px;
+  line-height: 38px;
+  margin: 0 0 10px 0;
+  overflow: hidden;
+  padding-left: 30px;
+  position: relative;
+  z-index: 10;
+}
+
+h4.type2 {
+  background-color: #ffffff;
+  border-left: 5px solid #94d315;
+  font-size: 108%;
+  font-weight: bold;
+  height: 30px;
+  line-height: 30px;
+  margin: 25px 0 8px 0;
+  overflow: hidden;
+  padding-left: 10px;
+}
+
+/***************************************
+ * list-type
+ **************************************/
+
+/*** type1 *******************/
+
+dl.type1 {
+  margin-top: 20px;
+}
+
+dl.type1 dt {
+  border-left: 3px solid #94d315;
+  font-size: 108%;
+  font-weight: bold;
+  line-height: 120%;
+  margin-bottom: 10px;
+  padding-left: 6px;
+}
+
+#calendar #ul_mp_name li:first-child {
+  border-left: solid 3px #94d315;
+}
+
+/***************************************
+ * footer
+ **************************************/
+
+/***************************************
+ * toppage
+ **************************************/
+
+.step-title {
+  border-bottom: 2px solid #94d315;
+}
+
+.step-title .step {
+  background-color: #94d315;
+}
+
+/***************************************
+ * table
+ **************************************/
+
+table.login {
+  margin-bottom: 15px;
+}
+
+table.login th {
+  height: 30px;
+  width: 30px;
+}
+
+table.login th img {
+  margin: 2px;
+}
+
+.calendar-content-td:hover {
+  background-color: rgba(242, 255, 214, .4);
+  filter: brightness(97%);
+}
+
+/***************************************
+ * box-type
+ **************************************/
+
+.two-column .menu-block {
+  float: left;
+  padding: 0 2% 0 3%;
+  width: 44%;
+}
+
+.menu-box {
+  min-height: 341px;
+}
+
+.menu-box2 {
+  min-height: 130px;
+}
+
+/***************************************
+ * calendar
+ **************************************/
+
+.shade table td.active {
+  background: #f2ffd6;
+}
+
+.res-last-info {
+  background: #f2ffd6;
+}
+
+td.active {
+  background: #f2ffd6;
+}
+
+.shade td.active .sp-res-step-title:before {
+  color: #94d315;
+}
+
+table.res-step td.active:before {
+  color: #94d315;
+}
+
+.calendar-content-li:hover {
+  background-color: #f2ffd6;
+}
+
+table.res-step tr:hover td {
+  background-color: rgba(242, 255, 214, .4);
+  filter: brightness(97%);
+}
+
+table.res-step tr td.active:hover {
+  background-color: #f2ffd6;
+  filter: brightness(98%) saturate(120%);
+}
+
+/***************************************
+ * support
+ **************************************/
+
+dl#support #top {
+  font-weight: bold;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+dl#support dt {
+  border-left: 3px solid #94d315;
+  color: #94d315;
+  font-size: 108%;
+  font-weight: bold;
+  line-height: 120%;
+  margin-top: 15px;
+  padding-left: 6px;
+}
+
+dl#support dd {
+  background: url(../image/common/dot-line1.gif) repeat-x left bottom;
+  margin-top: 5px;
+  padding-bottom: 15px;
+}
+
+input[type="checkbox"]:checked + .input-checkbox::before {
+  background-color: #8cc715;
+  border: 1px solid #8cc715;
+}
+
+input[type="radio"]:checked + .input-radio::before {
+  border: 2px solid #8cc715;
+}
+
+input[type="radio"]:checked + .input-radio::after {
+  background: #8cc715;
+  border: 1px solid #8cc715;
+}
+
+input[type="checkbox"]:checked + .input-alltime-checkbox::after {
+  border-bottom: 2px solid #8cc715;
+  border-right: 2px solid #8cc715;
+}
+
+#calendar #nav-area ul#time-next-back li.view-alltime-li.alltime a {
+  background-color: #8cc715;
+  border-color: #8cc715;
+}
+
+@media screen and (max-width: 768px) {
+  input[type="radio"]:checked + .input-radio::after {
+    border: 2px solid #8cc715;
+  }
+}
+
+.option_caption {
+  color: #94d315;
+}
+
+.btn-type3 i {
+  color: #94d315;
+}
+
+.attention-not-done-wrapper {
+  background-color: #f2ffd6;
+}
+
+.reserveform-mp-name {
+  border-color: #94d315;
+}

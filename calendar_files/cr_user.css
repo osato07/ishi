@@ -1,0 +1,104 @@
+/***************************************
+ placeholder用（カンマ区切りだと効かなかったのでこの記述で）
+ **************************************/
+
+/* 古いfirefox用？ */
+input:-moz-placeholder {
+  color: #999999;
+  opacity: 1;
+}
+
+input:focus:-moz-placeholder {
+  color: transparent;
+}
+
+input::-moz-placeholder {
+  color: #999999;
+  opacity: 1;
+}
+
+input:focus::-moz-placeholder {
+  color: transparent;
+}
+
+/* ie11 */
+input:-ms-input-placeholder {
+  color: #999999;
+  opacity: 1;
+}
+
+/* edge */
+input::-webkit-input-placeholder {
+  color: #999999;
+  opacity: 1;
+}
+
+/* edge, chrome */
+input:focus::-webkit-input-placeholder {
+  color: transparent;
+}
+
+/* chrome, firefox */
+input::placeholder {
+  color: #999999;
+  opacity: 1;
+}
+
+/* firefox */
+input:focus::placeholder {
+  color: transparent;
+}
+
+/***************************************
+ * オリジナルページ
+ **************************************/
+ul.punitlist li {
+  background: url(../../../image/common/dot-line1.gif) repeat-x left bottom;
+  margin-top: 10px;
+  padding: 0 0 10px 20px;
+  position: relative;
+}
+
+ul.punitlist li:before {
+  background-color: #757575;
+  content: "";
+  height: 6px;
+  left: 6px;
+  position: absolute;
+  top: 8px;
+  width: 6px;
+}
+
+/***************************************
+ * オリジナルページ詳細
+ **************************************/
+#punitdtl-area .photo-area {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#punitdtl-area .text-area {
+  border: 2px solid #eeeeee;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  padding: 10px 15px;
+}
+
+#punitdtl-area .text-area .link {
+  background: #eeeeee;
+  margin-top: 10px;
+  overflow: hidden;
+  padding: 5px 10px 5px 20px;
+  position: relative;
+}
+
+#punitdtl-area .text-area .link:before {
+  background-color: #757575;
+  content: "";
+  height: 6px;
+  left: 6px;
+  position: absolute;
+  top: 12px;
+  width: 6px;
+}

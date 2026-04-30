@@ -1,0 +1,104 @@
+/* このファイルは UTF-8 で保存すること */
+
+/***************************************
+ *
+ * ブラウザスタイルをリセットする
+ * （※基本的に編集しない）
+ *
+ **************************************/
+
+/* タグのマージン、パディングを0pxにする */
+
+body,
+div,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+pre,
+form,
+fieldset,
+input,
+textarea,
+p,
+blockquote,
+th,
+td {
+  margin: 0;
+  padding: 0;
+}
+
+/* tableタグのcellspacingとcellpaddingを0pxにする */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* javascriptのfieldsetタグとimg(aタグ内のimg)、*/
+/* abbr, acronymタグに表示されるボーダーを0pxにする */
+
+fieldset,
+img,
+abbr,
+acronym {
+  border: 0;
+}
+
+/* タグのfontスタイルを通常にする */
+
+address,
+caption,
+cite,
+code,
+dfn,
+em,
+th,
+var {
+  font-style: normal;
+  font-weight: normal;
+}
+
+/* ol, ulタグのリストスタイル（アローやマージンなど）を無くす */
+
+ol,
+ul,
+li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* caption, thタグを左に寄せる */
+
+caption,
+th {
+  text-align: left;
+}
+
+/* hタグの表示を通常のテキストと同じにする */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 100%;
+  font-weight: normal;
+}
+
+/* qタグの前後にキーワードを配置しない */
+
+q:before,
+q:after {
+  content: "";
+}
